@@ -1,3 +1,4 @@
+
 package masa3mc.masa3lobby;
 
 import com.google.common.io.ByteArrayDataInput;
