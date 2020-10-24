@@ -6,6 +6,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,7 +20,11 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Listeners implements Listener {
 
@@ -32,6 +38,29 @@ public class Listeners implements Listener {
         for (Player player1 : Bukkit.getOnlinePlayers()) {
             player1.getWorld().playSound(player1.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 2);
         }
+        if(Masa3Lobby.config.getBoolean("Config.Message.T/F")) {
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&',Masa3Lobby.config.getString("Config.Message.message")));
+        }
+        File f = new File(Masa3Lobby.instance.getDataFolder().getAbsolutePath(), "/players/" + player.getUniqueId() + ".yml");
+        FileConfiguration c = YamlConfiguration.loadConfiguration(f);
+        c.set("name", player.getName());
+        InetSocketAddress IPAdressPlayer = player.getAddress();
+        String sfullip = IPAdressPlayer.toString();
+        String[] fullip;
+        String[] ipandport;
+        fullip = sfullip.split("/");
+        String sIpandPort = fullip[1];
+        ipandport = sIpandPort.split(":");
+        String sIp = ipandport[0];
+        c.set("IP", sIp);
+        Date d = new Date();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd E HH:mm:ss");
+        c.set("Log." + df.format(d),"Join");
+        try {
+            c.save(f);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @EventHandler
@@ -39,6 +68,17 @@ public class Listeners implements Listener {
         event.setQuitMessage(null);
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.getWorld().playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 2);
+        }
+        Player player = event.getPlayer();
+        File f = new File(Masa3Lobby.instance.getDataFolder().getAbsolutePath(), "/players/" + player.getUniqueId() + ".yml");
+        FileConfiguration c = YamlConfiguration.loadConfiguration(f);
+        Date d = new Date();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd E HH:mm:ss");
+        c.set("Log." + df.format(d),"Quit");
+        try {
+            c.save(f);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -110,7 +150,7 @@ public class Listeners implements Listener {
     public void onClickServerSelect(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         if ((event.getAction() == Action.RIGHT_CLICK_AIR) || (event.getAction() == Action.RIGHT_CLICK_BLOCK)) {
-            if (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "-ServerSelect-")) {
+            if (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().equals(setItems.serverselect_string)) {
                 setItems.openMenu(player);
             }
         }

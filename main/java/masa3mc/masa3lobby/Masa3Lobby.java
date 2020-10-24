@@ -4,6 +4,7 @@ import masa3mc.masa3lobby.Listener.AreaListener;
 import masa3mc.masa3lobby.Listener.GateListener;
 import masa3mc.masa3lobby.Listener.Listeners;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -15,12 +16,26 @@ public final class Masa3Lobby extends JavaPlugin {
     public static Masa3Lobby instance = null;
     private static BungeeCord bungeecord = null;
     public static YamlConfiguration portal_yml = null;
+    public static FileConfiguration config = null;
 
     @Override
     public void onEnable() {
         instance = this;
         bungeecord = new BungeeCord();
         createyml();
+        config = getConfig();
+        config.options().copyDefaults(true);
+        if(config.get("Config") == null){
+            config.set("Config.Message.T/F", true);
+            config.set("Config.Message.message", "いじってね");
+            config.set("Config.Lobby.X.min", -14);
+            config.set("Config.Lobby.Y.min", 0);
+            config.set("Config.Lobby.Z.min", -464);
+            config.set("Config.Lobby.X.max", 186);
+            config.set("Config.Lobby.Y.max", 101);
+            config.set("Config.Lobby.Z.max", -263);
+        }
+        saveConfig();
         portal_yml = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "portals.yml"));
         Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         Bukkit.getPluginManager().registerEvents(new Listeners(), this);
