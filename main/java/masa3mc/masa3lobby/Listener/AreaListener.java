@@ -10,7 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 public class AreaListener implements Listener {
-    private Masa3Lobby instance = Masa3Lobby.instance;
+    private final Masa3Lobby instance = Masa3Lobby.instance;
 
     @EventHandler
     public void onArea(PlayerMoveEvent event){

@@ -2,12 +2,13 @@ package masa3mc.masa3lobby.Listener;
 
 import masa3mc.masa3lobby.Masa3Lobby;
 import masa3mc.masa3lobby.Other.setItems;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Sound;
+import org.bukkit.*;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -31,6 +32,7 @@ public class Listeners implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        player.setExp(0);
         event.setJoinMessage(null);
         player.teleport(player.getWorld().getSpawnLocation());
         setItems.setInv(player);
@@ -147,11 +149,72 @@ public class Listeners implements Listener {
     }
 
     @EventHandler
+    public void onFish(PlayerFishEvent event){
+        Player player = event.getPlayer();
+            if (event.getState().equals(PlayerFishEvent.State.CAUGHT_FISH)) {
+                ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
+                Bukkit.dispatchCommand(console, "mysterydust add " + player.getName() + " 1");
+                File f = new File(Masa3Lobby.instance.getDataFolder().getAbsolutePath(), "/players/" + player.getUniqueId() + ".yml");
+                FileConfiguration c = YamlConfiguration.loadConfiguration(f);
+                if(c.get("Fish") == null) {
+                    c.set("Fish.Cod", 0);
+                    c.set("Fish.Salmon", 0);
+                    c.set("Fish.Pufferfish", 0);
+                    c.set("Fish.Tropical-fish", 0);
+                    c.set("Fish.Other", 0);
+                    try {
+                        c.save(f);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                Item item = (Item)event.getCaught();
+
+                    if (item.getItemStack().getType().equals(Material.COD)) {
+                        int fn = c.getInt("Fish.Cod") + 1;
+                        c.set("Fish.Cod", fn);
+                    } else if (item.getItemStack().getType().equals(Material.SALMON)) {
+                        int fn = c.getInt("Fish.Salmon") + 1;
+                        c.set("Fish.Salmon", fn);
+                    } else if (item.getItemStack().getType().equals(Material.PUFFERFISH)) {
+                        int fn = c.getInt("Fish.Pufferfish") + 1;
+                        c.set("Fish.Pufferfish", fn);
+                    } else if (item.getItemStack().getType().equals(Material.TROPICAL_FISH)) {
+                        int fn = c.getInt("Fish.Tropical-fish") + 1;
+                        c.set("Fish.Tropical-fish", fn);
+                    } else {
+                        int fn = c.getInt("Fish.Other") + 1;
+                        c.set("Fish.Other", fn);
+                    }
+
+                try {
+                    c.save(f);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+    }
+
+    @EventHandler
     public void onClickServerSelect(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         if ((event.getAction() == Action.RIGHT_CLICK_AIR) || (event.getAction() == Action.RIGHT_CLICK_BLOCK)) {
             if (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().equals(setItems.serverselect_string)) {
                 setItems.openMenu(player);
+            }
+            if (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().equals(setItems.Fish)) {
+                if(player.isSneaking()) {
+
+                    File f = new File(Masa3Lobby.instance.getDataFolder().getAbsolutePath(), "/players/" + player.getUniqueId() + ".yml");
+                    FileConfiguration c = YamlConfiguration.loadConfiguration(f);
+
+                    if(c.get("Fish") == null){
+                        return;
+                    }
+
+                    setItems.openFish(player);
+                }
             }
         }
     }
