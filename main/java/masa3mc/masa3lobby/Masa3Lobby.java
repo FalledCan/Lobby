@@ -3,6 +3,7 @@ package masa3mc.masa3lobby;
 import masa3mc.masa3lobby.Listener.AreaListener;
 import masa3mc.masa3lobby.Listener.GateListener;
 import masa3mc.masa3lobby.Listener.Listeners;
+import masa3mc.masa3lobby.Other.Daily;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -17,9 +18,11 @@ public final class Masa3Lobby extends JavaPlugin {
     private static BungeeCord bungeecord = null;
     public static YamlConfiguration portal_yml = null;
     public static FileConfiguration config = null;
+    public static Masa3Lobby plugin = null;
 
     @Override
     public void onEnable() {
+        plugin = this;
         instance = this;
         bungeecord = new BungeeCord();
         createyml();
@@ -34,6 +37,7 @@ public final class Masa3Lobby extends JavaPlugin {
             config.set("Config.Lobby.X.max", 186);
             config.set("Config.Lobby.Y.max", 101);
             config.set("Config.Lobby.Z.max", -263);
+            config.set("Config.Daily","06:00:00");
         }
         saveConfig();
         portal_yml = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "portals.yml"));
@@ -41,6 +45,9 @@ public final class Masa3Lobby extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new Listeners(), this);
         Bukkit.getPluginManager().registerEvents(new GateListener(), this);
         Bukkit.getPluginManager().registerEvents(new AreaListener(), this);
+
+        Daily daily = new Daily();
+        daily.daily();
 
     }
 
@@ -91,6 +98,10 @@ public final class Masa3Lobby extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+    }
+
+    public static Masa3Lobby getPlugin(){
+        return plugin;
     }
 
     public static BungeeCord bungeecord() {

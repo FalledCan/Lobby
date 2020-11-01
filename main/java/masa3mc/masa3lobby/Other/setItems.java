@@ -48,6 +48,7 @@ public class setItems {
 
         player.getInventory().setItem(1,item1);
         player.getInventory().setItem(7,item2);
+
     }
 
     public static void openFish(Player player) {

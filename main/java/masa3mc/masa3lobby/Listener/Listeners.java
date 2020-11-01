@@ -20,6 +20,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +63,21 @@ public class Listeners implements Listener {
             c.save(f);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        File f2 = new File(Masa3Lobby.instance.getDataFolder().getAbsolutePath(), "Daily.yml" );
+        FileConfiguration c2 = YamlConfiguration.loadConfiguration(f2);
+        if(c2.get("player." + player.getUniqueId()) == null){
+            player.sendMessage("§7[§6Lobby§7]§aデイリーボーナスを受け取りました。");
+            player.sendMessage("§7[§6Lobby§7]§aデイリーボーナスは毎朝6時更新です。");
+            ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
+            Bukkit.dispatchCommand(console, "mysterydust add " + player.getName() + " 10");
+            c2.set("player." + player.getUniqueId(), "was");
+            try {
+                c2.save(f2);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -197,23 +213,32 @@ public class Listeners implements Listener {
     }
 
     @EventHandler
+    public void onGetItem(PlayerPickupItemEvent event){
+        event.setCancelled(true);
+        event.getItem().remove();
+    }
+
+    @EventHandler
     public void onClickServerSelect(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        if ((event.getAction() == Action.RIGHT_CLICK_AIR) || (event.getAction() == Action.RIGHT_CLICK_BLOCK)) {
-            if (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().equals(setItems.serverselect_string)) {
-                setItems.openMenu(player);
-            }
-            if (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().equals(setItems.Fish)) {
-                if(player.isSneaking()) {
+        if ((event.getAction() == Action.RIGHT_CLICK_AIR)) {
+            if(event.getItem().getItemMeta() != null) {
+                if (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().equals(setItems.serverselect_string)) {
+                    setItems.openMenu(player);
+                } else if (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().equals(setItems.Fish)) {
+                    if (player.isSneaking()) {
 
-                    File f = new File(Masa3Lobby.instance.getDataFolder().getAbsolutePath(), "/players/" + player.getUniqueId() + ".yml");
-                    FileConfiguration c = YamlConfiguration.loadConfiguration(f);
+                        File f = new File(Masa3Lobby.instance.getDataFolder().getAbsolutePath(), "/players/" + player.getUniqueId() + ".yml");
+                        FileConfiguration c = YamlConfiguration.loadConfiguration(f);
 
-                    if(c.get("Fish") == null){
-                        return;
+                        if (c.get("Fish") == null) {
+                            return;
+                        }
+
+                        setItems.openFish(player);
                     }
-
-                    setItems.openFish(player);
+                } else {
+                    return;
                 }
             }
         }
